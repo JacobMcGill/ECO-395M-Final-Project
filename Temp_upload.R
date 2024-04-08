@@ -13,7 +13,7 @@ for (csv_file in csv_files) {
   # Extract state name from the file name
   state_name <- tools::file_path_sans_ext(basename(csv_file))
   
-  # Read CSV into a data frame using readr::read_csv
+  # Read CSV into a data frame using read_csv
   df <- read_csv(csv_file, skip = 4)
   
   # Add 'State' column using dplyr::mutate
