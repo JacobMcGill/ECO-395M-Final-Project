@@ -12,8 +12,8 @@ UR_data = read_csv("C://Users/jacob/OneDrive/Documents/ECO-395M-Final-Project/Mo
          Year = year(as.Date(DATE)))
 Temp_data = read_csv("C://Users/jacob/OneDrive/Documents/ECO-395M-Final-Project/Modified_data/state_temp_data.csv")%>% 
   select(-1) %>%
-  mutate(Month = month(as.Date(Date, format = "%Y%m")),
-         Year = year(as.Date(Date, format = "%Y%m")))
+  mutate(Month = substr(as.character(Date), 1, 4),
+         Year = as.integer(substr(as.character(Date), 5, 6)))
 gen_monthly = read_csv("C://Users/jacob/OneDrive/Documents/ECO-395M-Final-Project/Modified_data/gen_monthly.csv")%>% 
   select(-1) %>%
   rename(Month = MONTH,
