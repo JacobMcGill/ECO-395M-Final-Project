@@ -1,9 +1,9 @@
 library(readxl)
 library(tidyverse)
 library(dplyr)
-Energy_data <- read_excel("C:/Users/jacob/Downloads/Data_Mining_project/ECO-395M-Final-Project/HS861M 2010-.xlsx")
-Oil_Employment_data <- read.csv("C://Users/jacob/Downloads/Data_Mining_project/ECO-395M-Final-Project/Data_Mining_project/CES1021100001.csv")
-US_Crude_Oil <- read_csv("C://Users/jacob/Downloads/Data_Mining_project/ECO-395M-Final-Project/Data_Mining_project/U.S._Field_Production_of_Crude_Oil.csv", skip = 4)
+Energy_data <- read_excel("C://Users/jacob/OneDrive/Documents/ECO-395M-Final-Project/upload_data/HS861M 2010-.xlsx")
+Oil_Employment_data <- read.csv("C://Users/jacob/OneDrive/Documents/ECO-395M-Final-Project/upload_data//CES1021100001.csv")
+US_Crude_Oil <- read_csv("C://Users/jacob/OneDrive/Documents/ECO-395M-Final-Project/upload_data/U.S._Field_Production_of_Crude_Oil.csv", skip = 4)
 # Cleaning the data and focusing just on totals
 Energy_data = Energy_data[-c(1),-c(5:20)]
 names(Energy_data) = Energy_data[1,]
@@ -19,4 +19,4 @@ US_Crude_Oil = US_Crude_Oil %>%
 #Now work on joing data
 joined = inner_join(Energy_data, Oil_Employment_data, by = "DATE")
 joined = subset((left_join(joined, US_Crude_Oil, by = "DATE")),select = -c(Month.y))  
-write.csv(joined, "C://Users/jacob/Downloads/Data_Mining_project/ECO-395M-Final-Project/Modified_data/joined_data.csv")
+write.csv(joined, "C:\Users\jacob\OneDrive\Documents\ECO-395M-Final-Project\Modified_data\joined_data.csv")
