@@ -1,6 +1,6 @@
 library(readr)
 library(tidyverse)
-temp_folder = "C://Users/jacob/Downloads/Data_Mining_project/ECO-395M-Final-Project/Data_Mining_project/Temp_data"
+temp_folder = "C://Users/jacob/OneDrive/Documents/ECO-395M-Final-Project/upload_data/Temp_data"
 # List all CSV files in the directory
 csv_files <- list.files(path = temp_folder, pattern = "\\.csv$", full.names = TRUE)
 
@@ -26,4 +26,4 @@ for (csv_file in csv_files) {
 
 # Merge all data frames into a single data frame
 state_temp_data <- bind_rows(dfs)
-write.csv(state_temp_data, "C://Users/jacob/Downloads/Data_Mining_project/ECO-395M-Final-Project/Modified_data/state_temp_data.csv")
+write.csv(state_temp_data, "C://Users/jacob/OneDrive/Documents/ECO-395M-Final-Project/Modified_data/state_temp_data.csv")

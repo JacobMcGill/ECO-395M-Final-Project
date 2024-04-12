@@ -1,6 +1,6 @@
 library(readr)
 library(tidyverse)
-ur_folder = "C://Users/jacob/Downloads/Data_Mining_project/ECO-395M-Final-Project/Data_Mining_project/UR_data"
+ur_folder = "C://Users/jacob/OneDrive/Documents/ECO-395M-Final-Project/upload_data/UR_data"
 # List all CSV files in the directory
 csv_files <- list.files(path = ur_folder, pattern = "\\.csv$", full.names = TRUE)
 
@@ -29,4 +29,4 @@ state_UR_data <- bind_rows(dfs) %>%
   rename(DATE = X1,
          UR_Rate = X2)
 
-write.csv(state_UR_data, "C://Users/jacob/Downloads/Data_Mining_project/ECO-395M-Final-Project/Modified_data/state_UR_data.csv")
+write.csv(state_UR_data, "C://Users/jacob/OneDrive/Documents/ECO-395M-Final-Project/Modified_data/state_UR_data.csv")

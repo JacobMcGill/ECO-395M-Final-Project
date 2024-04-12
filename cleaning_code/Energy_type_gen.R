@@ -3,12 +3,12 @@ library(tidyverse)
 
 
 #Extract the sheets for 2018 through 2023 anf combine them into a single dataframe
-gen_2018 = read_excel("C://Users/jacob/Downloads/Data_Mining_project/generation_monthly.xlsx", sheet = "2018_Final", col_names = FALSE, skip = 5)
-gen_2019 = read_excel("C://Users/jacob/Downloads/Data_Mining_project/generation_monthly.xlsx", sheet = "2019_Final", col_names = FALSE, skip = 5)
-gen_2020 = read_excel("C://Users/jacob/Downloads/Data_Mining_project/generation_monthly.xlsx", sheet = "2020_Final", col_names = FALSE, skip = 5)
-gen_2021 = read_excel("C://Users/jacob/Downloads/Data_Mining_project/generation_monthly.xlsx", sheet = "2021_Final", col_names = FALSE, skip = 5)
-gen_2022 = read_excel("C://Users/jacob/Downloads/Data_Mining_project/generation_monthly.xlsx", sheet = "2022_Final", col_names = FALSE, skip = 5)
-gen_2023 = read_excel("C://Users/jacob/Downloads/Data_Mining_project/generation_monthly.xlsx", sheet = "2023_Preliminary",col_names = FALSE, skip = 5)
+gen_2018 = read_excel("C://Users/jacob/OneDrive/Documents/ECO-395M-Final-Project/upload_data/generation_monthly.xlsx", sheet = "2018_Final", col_names = FALSE, skip = 5)
+gen_2019 = read_excel("C://Users/jacob/OneDrive/Documents/ECO-395M-Final-Project/upload_data/generation_monthly.xlsx", sheet = "2019_Final", col_names = FALSE, skip = 5)
+gen_2020 = read_excel("C://Users/jacob/OneDrive/Documents/ECO-395M-Final-Project/upload_data/generation_monthly.xlsx", sheet = "2020_Final", col_names = FALSE, skip = 5)
+gen_2021 = read_excel("C://Users/jacob/OneDrive/Documents/ECO-395M-Final-Project/upload_data/generation_monthly.xlsx", sheet = "2021_Final", col_names = FALSE, skip = 5)
+gen_2022 = read_excel("C://Users/jacob/OneDrive/Documents/ECO-395M-Final-Project/upload_data/generation_monthly.xlsx", sheet = "2022_Final", col_names = FALSE, skip = 5)
+gen_2023 = read_excel("C://Users/jacob/OneDrive/Documents/ECO-395M-Final-Project/upload_data/generation_monthly.xlsx", sheet = "2023_Preliminary",col_names = FALSE, skip = 5)
 generation_monthly = rbind(gen_2018, gen_2019, gen_2020, gen_2021, gen_2022, gen_2023) %>%
   rename(YEAR = 1,
          MONTH = 2,
@@ -105,4 +105,4 @@ generation_monthly = generation_monthly %>%
             nuclear_gen = mean(nuclear_gen),
             other_gas_gen = mean(other_gas_gen),
             pump_gen = mean(pumped_gen))
-write.csv(generation_monthly, "C://Users/jacob/Downloads/Data_Mining_project/ECO-395M-Final-Project/Modified_data/gen_monthly.csv")
+write.csv(generation_monthly, "C://Users/jacob/OneDrive/Documents/ECO-395M-Final-Project/Modified_data/gen_monthly.csv")
