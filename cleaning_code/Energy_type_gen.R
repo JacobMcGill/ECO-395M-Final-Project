@@ -3,7 +3,7 @@ library(tidyverse)
 
 
 #Extract the sheets for 2018 through 2023 anf combine them into a single dataframe
-gen_2018 = read_excel("C://Users/jacob/OneDrive/Documents/ECO-395M-Final-Project/upload_data/generation_monthly.xlsx", sheet = "2018_Final", col_names = FALSE, skip = 5)
+gen_2018 = read_excel("C:/Users/jacob/OneDrive/Documents/ECO-395M-Final-Project/upload_data/generation_monthly.xlsx", sheet = "2018_Final", col_names = FALSE, skip = 5)
 gen_2019 = read_excel("C://Users/jacob/OneDrive/Documents/ECO-395M-Final-Project/upload_data/generation_monthly.xlsx", sheet = "2019_Final", col_names = FALSE, skip = 5)
 gen_2020 = read_excel("C://Users/jacob/OneDrive/Documents/ECO-395M-Final-Project/upload_data/generation_monthly.xlsx", sheet = "2020_Final", col_names = FALSE, skip = 5)
 gen_2021 = read_excel("C://Users/jacob/OneDrive/Documents/ECO-395M-Final-Project/upload_data/generation_monthly.xlsx", sheet = "2021_Final", col_names = FALSE, skip = 5)
@@ -44,7 +44,7 @@ petro_gen <- generation_monthly %>%
 petro_gen = petro_gen[-c(4:5)]
 # Extracting solar power
 solar_gen <- generation_monthly %>%
-  filter(TYPE == "Total Electric Power Industry" & ENERGY_SOURCE == "Solar Thermal and Pholtovaic")%>%
+  filter(TYPE == "Total Electric Power Industry" & ENERGY_SOURCE == "Solar Thermal and Photovoltaic")%>%
   rename(solar_gen = GEN)
 solar_gen = solar_gen[-c(4:5)]
 # Biomass power
@@ -93,7 +93,7 @@ generation_monthly = left_join(generation_monthly, pumped_gen, by = c("STATE"="S
 
 generation_monthly = mutate_all(generation_monthly, ~ifelse(is.na(.), 0, .))
 generation_monthly = generation_monthly %>%
-  group_by(STATE, YEAR) %>%
+  group_by(STATE, YEAR, MONTH) %>%
   summarize(coal_gen = mean(coal_gen),
             hydro_gen = mean(hydro_gen),
             gas_gen = mean(gas_gen),
