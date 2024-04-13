@@ -23,8 +23,8 @@ final_monthly_join = inner_join(final_joined, gen_monthly, by = c("Year", "Month
 final_UR_join = inner_join(final_monthly_join, UR_data, by = c("Year", "Month", "State")) %>%
   select(-26) %>%
   rename(Date = DATE.x)
-final_temp_join = inner_join(final_UR_join, UR_data, by = c("Year", "Month", "State")) %>%
+final_temp_join = inner_join(final_UR_join, Temp_data, by = c("Year", "Month", "State")) %>%
   select(-26, -27) %>%
   rename(UR = UR_Rate.y)
-final_data = final_temp_join
+final_data = final_temp_join %>% select(-26)
 write.csv(final_data, "C://Users/jacob/OneDrive/Documents/ECO-395M-Final-Project/Modified_data/final_data.csv")
