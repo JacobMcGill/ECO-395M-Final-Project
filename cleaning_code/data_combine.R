@@ -25,6 +25,8 @@ final_UR_join = inner_join(final_monthly_join, UR_data, by = c("Year", "Month", 
   rename(Date = DATE.x)
 final_temp_join = inner_join(final_UR_join, Temp_data, by = c("Year", "Month", "State")) %>%
   select(-26, -27) %>%
+  rename(UR = UR_Rate.y)
+final_data = final_temp_join %>% 
   rename(Temp = Value,
          Temp_Anomaly = Anomaly)
 final_data = final_temp_join
