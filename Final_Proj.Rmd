@@ -10,6 +10,20 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ```{r, include = FALSE}
 # Packages go here
+library(rpart)
+library(randomForest)
+library(gbm)
+library(rpart.plot)
+library(Metrics)
+library(rsample)
+library(pdp)
+library(dplyr)
+library(tidyverse)
+library(ggplot2)
+library(rsample)
+library(mosaic)
+library(caret)
+library(modelr)
 ```
 # Abstract
 
@@ -45,12 +59,15 @@ Daniel will talk about collecting unemployment here.
 
 Then we list all variables and their units that will be included in the model.
 
+## Exploratory Data Analysis 
+
 Talk about initial data analysis
 Musab and Daniel will process for analyzing data for unemployment and energy prices.
 
 Daniel will talk about analyzing temperature and Energy
 
 Jacob will talk about analzying energy generation and energy prices
+We also looked at the relationship between energy generation and electricity price in cents/kWh. To do this, I calculated the total energy generation by state for a month and the average energy price in cents per kilowatt hour for each state for a month and found the correlation between the two to gen a general overview of the relationship between the 2. I also found the correlation between the individual energy generation types (petro, hydro, etc.) and energy price to look at the relationship between energy generation and energy prices. While this relationship is not causal, it may provide some insight on the effectiviness of this data in predicting energy prices.
 
 Then discuss the models we will use
 baseline (Daniel)
@@ -59,7 +76,7 @@ Lasso(Daniel and Musab)
 
 randomforest(Jacob)
 
-The other model we used to forecast energy prices was the tree model, specifically a randomforest model. We opted to used randomforest due to its strong out of box performance and relatively few parameters that would be needed to adjusted to optimize its performance. It's method of selecting only a fraction of features in each of its trees also acted as a usefule form of cross validation. We tested 3 randomforest models. The first took the form `Cents/kWh` ~ Year + Month + State + Thousand_dollars +  Megawatthours + Count + oil_emp + US_Oil_Prod + Lab_part + Employ_rate + UR + coal_gen + hydro_gen + gas_gen + other_gen + petro_gen + solar_gen + biomass_gen + wind_gen + nuclear_gen + other_gas_gen + pump_gen + Temp + Temp_Anomaly, plugging in all variables we had identified in our data frame. The second random forest model took the first 5 principal components of entire data frame. Since tree models are prone to overfitting data with large amounts of features, we decided to test this model to avoid overfitting and using a lower dimensional summary of the data we relied. Finally, the third model randomforest model relied on the first 5 principal components of the energy generation data (coal_gen, hydro_gen, etc) along with the variables Year,  Month, State, thousand_dollars, Megawatthours, Count, oil_emp, US_Oil_Prod, Lab_part, Employ_rate, and UR. We used this model to provide a lower dimensional summary of the energy data with having to combine that summary with variables that might not related to energy generation (such as unemployment or labor force participation).
+The other model we used to forecast energy prices was the tree model, specifically a randomforest model. We opted to used randomforest due to its strong out of box performance and relatively few parameters that would be needed to adjusted to optimize its performance. It's method of selecting only a fraction of features in each of its trees also acted as a usefule form of cross validation. We tested 3 randomforest models. The first took the form `Cents/kWh` ~ Year + Month + State + Thousand_dollars +  Megawatthours + Count + oil_emp + US_Oil_Prod + Lab_part + Employ_rate + UR + coal_gen + hydro_gen + gas_gen + other_gen + petro_gen + solar_gen + biomass_gen + wind_gen + nuclear_gen + other_gas_gen + pump_gen + Temp + Temp_Anomaly, plugging in all variables we had identified in our data frame. The second random forest model took the first 5 principal components of entire data frame. Since tree models are prone to overfitting data with large amounts of features, we decided to test this model to avoid overfitting and using a lower dimensional summary of the data we relied. However, since this dataset was created by combining smaller data sets that were not closely related (such as unemployment and monthly temperature with energy production) there may be a concern that a PCA of elements of the data set may not effectively capture variation in the data. To address this concern while still using some lower dimensional summary of the data, we also estimated an third randomforest model that relied on the first 5 principal components of the energy generation data (coal_gen, hydro_gen, etc) along with the variables Year,  Month, State, thousand_dollars, Megawatthours, Count, oil_emp, US_Oil_Prod, Lab_part, Employ_rate, and UR. We used this model to provide a lower dimensional summary of the energy data with having to combine that summary with variables that might not related to energy generation (such as unemployment or labor force participation). The random forests will be trained on 80% of the data and tested on the remaining 20%.
 
 # Results
 
@@ -70,12 +87,235 @@ Start with Daniel and Musab discussing the results of their analysis of unemploy
 Daniel shows results of temperature
 
 Jacob shows results of energy generation
+### Energy Generation and Energy Prices Results
+
+Plotting aver energy price in cents per kilowatt hour against total energy generation for a given month in a state produces the following the graph:
+```{r, include = FALSE}
+# Establishing relationship between energy generation and energy prices.
+energy_gen_data = read_csv("C://Users/jacob/OneDrive/Documents/ECO-395M-Final-Project/Modified_data/final_data.csv") %>% 
+  select(-1) 
+energy_gen_monthly = energy_gen_data %>%
+  group_by(Year, Month, State) %>%
+  summarize(energy_total = sum(coal_gen + hydro_gen + gas_gen + other_gen + petro_gen + 
+                              solar_gen +
+                              biomass_gen + wind_gen + nuclear_gen + other_gas_gen),
+            `Cents/kWh` = mean(`Cents/kWh`))
+```
+```{r, echo = FALSE}
+ggplot(energy_gen_monthly) +
+  (geom_point(aes(x=energy_total, y = `Cents/kWh`)))
+
+```
+The relationship appears to be negative, but there is variation and significant clustering of data. Next, looking into the correlation of between energy production and energy prices produces these results. The first column is the estimated correlation between energy prices in cents per kilowatt hours while the second is the estimate p-value of that correlation.
+
+```{r, include = FALSE}
+avg_corr = cor.test(energy_gen_monthly$energy_total, energy_gen_monthly$`Cents/kWh`)
+avg_corr_estimate = cor(energy_gen_monthly$energy_total, energy_gen_monthly$`Cents/kWh`)
+avg_corr_p_value = avg_corr$p.value
+
+coal_corr = cor.test(energy_gen_data$coal_gen, energy_gen_data$`Cents/kWh`)
+coal_estimate = cor(energy_gen_data$coal_gen, energy_gen_data$`Cents/kWh`)
+coal_p_value = coal_corr$p.value
+
+hydro_corr = cor.test(energy_gen_data$hydro_gen, energy_gen_data$`Cents/kWh`)
+hydro_estimate = cor(energy_gen_data$hydro_gen, energy_gen_data$`Cents/kWh`)
+hydro_p_value = hydro_corr$p.value
+
+gas_corr = cor.test(energy_gen_data$gas_gen, energy_gen_data$`Cents/kWh`)
+gas_estimate = cor(energy_gen_data$gas_gen, energy_gen_data$`Cents/kWh`)
+gas_p_value = gas_corr$p.value
+
+other_corr = cor.test(energy_gen_data$other_gen, energy_gen_data$`Cents/kWh`)
+other_estimate = cor(energy_gen_data$other_gen, energy_gen_data$`Cents/kWh`)
+other_p_value = other_corr$p.value
+
+petro_corr = cor.test(energy_gen_data$petro_gen, energy_gen_data$`Cents/kWh`)
+petro_estimate = cor(energy_gen_data$petro_gen, energy_gen_data$`Cents/kWh`)
+petro_p_value = petro_corr$p.value
+
+solar_corr = cor.test(energy_gen_data$solar_gen, energy_gen_data$`Cents/kWh`)
+solar_estimate = cor(energy_gen_data$solar_gen, energy_gen_data$`Cents/kWh`)
+solar_p_value = solar_corr$p.value
+
+biomass_corr = cor.test(energy_gen_data$biomass_gen, energy_gen_data$`Cents/kWh`)
+biomass_estimate = cor(energy_gen_data$biomass_gen, energy_gen_data$`Cents/kWh`)
+biomass_p_value = biomass_corr$p.value
+
+wind_corr = cor.test(energy_gen_data$wind_gen, energy_gen_data$`Cents/kWh`)
+wind_estimate = cor(energy_gen_data$wind_gen, energy_gen_data$`Cents/kWh`)
+wind_p_value = wind_corr$p.value
+
+nuclear_corr = cor.test(energy_gen_data$nuclear_gen, energy_gen_data$`Cents/kWh`)
+nuclear_estimate = cor(energy_gen_data$nuclear_gen, energy_gen_data$`Cents/kWh`)
+nuclear_p_value = nuclear_corr$p.value
+
+other_gas_corr = cor.test(energy_gen_data$other_gas_gen, energy_gen_data$`Cents/kWh`)
+other_gas_estimate = cor(energy_gen_data$other_gas_gen, energy_gen_data$`Cents/kWh`)
+other_gas_p_value = other_gas_corr$p.value
+```
+
+```{r, echo = FALSE}
+Energy_correlation = matrix(c(avg_corr_estimate, avg_corr_p_value,
+                             coal_estimate, coal_p_value,
+                             hydro_estimate, hydro_p_value,
+                             gas_estimate, gas_p_value,
+                             other_estimate, other_p_value,
+                             petro_estimate, petro_p_value,
+                             solar_estimate, solar_p_value,
+                             biomass_estimate, biomass_p_value,
+                             wind_estimate, wind_p_value,
+                             nuclear_estimate, nuclear_p_value,
+                             other_gas_estimate, other_gas_p_value),
+                            nrow = 11,
+                            ncol = 2,
+                            byrow = TRUE)
+colnames(Energy_correlation) = c("Estimated Correlation", "P-Value")
+rownames(Energy_correlation) = c("Total Energy Production", "Coal",
+                                "Hydro", "Gas","Other", "Petro", "Solar", 
+                                "Biomass", "Wind" , "Nuclear", "Other Gas")
+Energy_correlation
+```
+As the scatter plot suggested, the top line correlation between total energy production and energy prices is negative. It is also statistically significant, although the actual value of the correlation is small, about 0.16. With the exception of petro, all energy generation types have a statistically significant correlation with energy prices, albeit of varying size and direction. About half are negative and half are positive. The largest is coal, which has a correlation of -0.41 with energy prices. These result would appear to be counterintuitive; it should be expected that energy generation's correlation with prices should not vary with type. However, since these correlations are not capturing a causal relationship, energy production may still be useful in estimating energy prices.    
+
 
 Daniel discuss results of base
 
 Daniel and Musab discuss results of Lasso
 
 Jacob discusses results of random forest
+
+## Randorm Forest Results
+```{r, include = FALSE}
+
+# Converting energy data to PCA
+baseline = read_csv("C://Users/jacob/OneDrive/Documents/ECO-395M-Final-Project/Modified_data/final_data.csv")
+pre_pca_total <- baseline %>% 
+  select(-1:-5, -9:-10)
+pre_pca_gen <- baseline %>% 
+  select(16:26)
+state_data = baseline %>%
+  select (2:5,9) 
+#Note to self: Be sure not to include date column in regressions. 
+#Lets get started by taking the pca of everyting numeric
+PCA_total = prcomp(pre_pca, scale=TRUE, rank=5)
+plot(PCA_total)
+summary(PCA_total)
+#Look at loadings of PCA
+gen_summary = PCA_total$rotation %>%
+  as.data.frame() %>%
+  rownames_to_column('Var')
+gen_summary %>%
+  select(Var, PC1) %>%
+  arrange(desc(PC1))
+gen_summary %>%
+  select(Var, PC2) %>%
+  arrange(desc(PC2))
+gen_summary %>%
+  select(Var, PC3) %>%
+  arrange(desc(PC3))
+gen_summary %>%
+  select(Var, PC4) %>%
+  arrange(desc(PC4))
+gen_summary %>%
+  select(Var, PC5) %>%
+  arrange(desc(PC5))
+#Now we're going to merge PCA data
+state_pca_total = merge(state_data, PCA_total$x[,1:5], by="row.names") %>%
+  select(-1) %>%
+  arrange(desc(Month), desc(Year), State)
+#Now lets focus on just energy generation
+PCA_gen = prcomp(pre_pca_gen, scale=TRUE, rank=5)
+plot(PCA_gen)
+summary(PCA_gen)
+#Look at loadings of PCA
+gen_summary = PCA_gen$rotation %>%
+  as.data.frame() %>%
+  rownames_to_column('Var')
+gen_summary %>%
+  select(Var, PC1) %>%
+  arrange(desc(PC1))
+gen_summary %>%
+  select(Var, PC2) %>%
+  arrange(desc(PC2))
+gen_summary %>%
+  select(Var, PC3) %>%
+  arrange(desc(PC3))
+gen_summary %>%
+  select(Var, PC4) %>%
+  arrange(desc(PC4))
+gen_summary %>%
+  select(Var, PC5) %>%
+  arrange(desc(PC5))
+#Now we're going to merge PCA data
+state_pca_gen = merge(baseline, PCA_gen$x[,1:5], by="row.names") %>%
+  select(-1:-2) %>%
+  arrange(desc(Month), desc(Year), State)
+```
+
+For our baseline randomforest model, we generated it from 1000 trees with 5 features in each. We selected 5 features for this model as the square root of the number of features was recommended as a rule of thumb and the baseline random forest model had 25 features. The RMSE for this model is: 
+
+```{r, include = FALSE, cache = TRUE}
+# Now we will move onto random forest
+rf_baseline = baseline %>%
+  select(-1,-5, -10) %>%
+  rename(Thousand_dollars = `Thousand Dollars`,
+         oil_emp = `oil_emp(thousands)`,
+         US_Oil_Prod = `U.S. Field Production of Crude Oil Thousand Barrels per Day`,
+         Lab_part = `Labor Force Participation`,
+         Employ_rate = `Employment-Population Rate`,
+         UR = `Unemployment Rate`)
+energy_split =  initial_split(rf_baseline, prop=0.8)
+energy_train = training(energy_split)
+energy_test  = testing(energy_split)
+energy.forest = randomForest(`Cents/kWh` ~ Year + Month + State + Thousand_dollars + 
+                               Megawatthours + Count + oil_emp 
+                             + US_Oil_Prod + Lab_part + Employ_rate + UR + coal_gen + hydro_gen 
+                             + gas_gen + other_gen + petro_gen + solar_gen + biomass_gen
+                             + wind_gen + nuclear_gen + other_gas_gen 
+                             + pump_gen + Temp + Temp_Anomaly, data= energy_train, ntree = 1000, mtry = 5, importance = TRUE)
+```
+```{r, echo = FALSE}
+modelr::rmse(energy.forest, energy_test)
+```
+
+Next we will find the RMSE for the PCA random forest model. Since this model has 8 features (the first 5 principal components and State, Month, and Year), we randomly generated 1000 trees with 3 features in each tree.
+
+```{r, include = FALSE, cache = TRUE}
+modelr::rmse(energy.forest, energy_test)
+#Now lets move to PCA applied to most of the dataset
+PCA_energy_split = initial_split(state_pca_total, prop = 0.8)
+PCA_energy_train = training(PCA_energy_split)
+PCA_energy_test = testing(PCA_energy_split)
+PCA_energy.forest = randomForest(`Cents/kWh` ~ PC1 + PC2 + PC3 + PC4 + PC5 
+                                 + State + Month + Year, data= PCA_energy_train, ntree = 1000, mtry = 3, importance = TRUE)
+```
+```{r, echo = FALSE}
+modelr::rmse(PCA_energy.forest, PCA_energy_test)
+```
+Finally we have the tree model with the energy generation being summarized by the first 5 principal components. This model had 16 features, so each tree generated had 4 features included. The RMSE of this model is:
+```{r, include = FALSE, cache = TRUE}
+# Do PCA applied to only power generation
+PCA_gen = state_pca_gen %>%
+  select(-4, -9) %>%
+  rename(Thousand_dollars = `Thousand Dollars`,
+         oil_emp = `oil_emp(thousands)`,
+         US_Oil_Prod = `U.S. Field Production of Crude Oil Thousand Barrels per Day`,
+         Lab_part = `Labor Force Participation`,
+         Employ_rate = `Employment-Population Rate`,
+         UR = `Unemployment Rate`)
+  
+PCA_gen_split = initial_split(PCA_gen, prop = 0.8)
+PCA_gen_train = training(PCA_gen_split)
+PCA_gen_test = testing(PCA_gen_split)
+PCA_gen.forest = randomForest(`Cents/kWh` ~ PC1 + PC2 + PC3 + PC4 + PC5 
+                              + Year + Month + State + Thousand_dollars + 
+                                Megawatthours + Count + oil_emp 
+                              + US_Oil_Prod + Lab_part + Employ_rate + UR, data= PCA_gen_train, ntree = 1000, mtry = 4, importance = TRUE)
+```
+```{r, echo = FALSE}
+modelr::rmse(PCA_gen.forest, PCA_gen_test)
+```
+
 
 
 # Conclusion
