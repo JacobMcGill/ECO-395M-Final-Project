@@ -80,8 +80,11 @@ All models were trained and tested on 80-20 split, with 80% of the data used to 
 
 # Results
 
-## Data Visualizations
+We will start by going over the results of our initial data analyis, then we will go into the results of our model
 
+## Initial Data Analsyis
+
+### Unemployment and Energy Prices
 
 ```{r, echo=FALSE, warning=FALSE, message=FALSE}
 average_values <- data %>%
@@ -94,7 +97,6 @@ average_values <- data %>%
 
 print(average_values)
 ```
-
 ```{r, echo=FALSE, warning=FALSE, message=FALSE}
 average_values$Date <- as.Date(paste(average_values$Year, average_values$Month, "01", sep = "-"))
 
@@ -121,6 +123,7 @@ ggplot(filtered_data) +
   theme_minimal() +
   theme(axis.text.x = element_text(angle = 90, hjust = 1))
 ```
+
 We utilized data from June 2020 onward because the initial economic disruption caused by the onset of COVID-19 began to stabilize, potentially offering a more normalized view of the relationship between unemployment rates and energy costs in the emerging post-pandemic conditions. 
 
 ```{r, echo=FALSE, warning=FALSE, message=FALSE}
@@ -151,6 +154,7 @@ ggplot(filtered_data) +
   theme_minimal() +
   theme(axis.text.x = element_text(angle = 90, hjust = 1))
 ```
+
 After examining the graph plotting electricity prices against unemployment rates from 2018 to 2020, we see distinct patterns but cannot discern the nature of their relationship purely by observation. Therefore, to quantitatively assess the relationship between these two variables, we will conduct a correlation test. This statistical test will help us determine whether there's a statistically significant correlation between the electricity prices and the unemployment rates during this period, and if so, how strong that correlation is.
 
 ```{r, echo=FALSE, warning=FALSE, message=FALSE}
@@ -169,6 +173,7 @@ cor_test_2021_2023 <- cor.test(data_2021_2023$Cents.kWh, data_2021_2023$Unemploy
 print(cor_test_2018_2019)
 print(cor_test_2021_2023)
 ```
+
 The correlation coefficient of -0.085 between 2018 and 2019 is slightly negative relationship. However, the relationship is weak. The correlation coefficient of 0.055 between 2021 and 2023  is slightly positive. However, it is also a weak relationship. Both periods show statistical significance with p-values less than 0.05, but given the weak correlation coefficients, the practical significance of these relationships is limited.
 
 ```{r, echo=FALSE}
@@ -195,6 +200,7 @@ ggplot(time_correlations, aes(x = Time, y = correlation)) +
   annotate("text", x = as.Date("2020-03-01"), y = 0.8, label = "Start of COVID-19 Pandemic", color = "darkred", size = 4, angle = 0, vjust = 1, fontface = "bold", hjust = -0.03)
 
 ```
+
 This visualization explores the total correlation between unemployment rate and energy costs over time. We see a sharp increase in the correlation between these measures at the onset of the COVID-19 Pandemic in March 2020. There are several potentially overlapping explanations for this insight. First, the pandemic caused a severe economic disruption in the labor market and energy sector, thus the sharp increase in correlation could indicate that these two variables were simulatenously affected by this economic shock. The increase in unemployment caused by the pandemic also led to many people working from home or otherwise altering their daily routine, thus shifting their energy consumption demand patterns. 
 
 ```{r, echo=FALSE}
