@@ -18,7 +18,27 @@ knitr::opts_chunk$set(echo = TRUE)
 # Methods
 
 First talk about data collection
-Jacob can talk about collecting energy data here. Explain variable of interest here as well (cents per kilowatt hour) Also talking about temp collection
+
+## Data Collection
+
+Jacob can talk about collecting energy data here. Explain variable of interest here as well (cents per kilowatt hour) Also talking about temp collection.
+To construct our data set, we collected data from several sources. For the data on monthly energy prices, we used the Energy Information Agency’s (EIA) Monthly Electric Power Industry March 2024 report, specifically its reported price in cents per kilowatt hour in the “Total” category. We also used the EIA’s report on monthly energy generation by state, producer sector, and energy source, focusing just on data from the Total Electric Power Industry producer type, which is the sum of the power generation for all other types. NOTE: I determine this by spot checking the Alaska Coal generation data for January 2018 and found that all other categories for coal in Alaska in that month added up to Total Electric Power Industry. END NOTE. We extracted all energy categories from it. We also relied on data from FRED, including data on the number of Americans employed in the Oil Industry and US Production of Crude Oil. We also relied on data from the Bureau of Labor Statistics for monthly unemployment data by state, including monthly unemployment rate, labor force participation and employment population rate for each state. Finally, we used data from the National Centers for Environmental Information on average state monthly temperature (in Fahrenheit) and how that temperature deviated from the mean temperature of that state.
+
+The variables included in our final dataset are:
+* Year, Month: The year and month the observation was recorded the observation.
+* State: The state of the observation was recorded in
+* Thousand Dollars: Total Revenues collected in the state for electricity generation in thousand dollars.
+* Megawatthours: Total sales of energy in Megawatt Hours.
+* Count: Amount of customers serviced in the state.
+* Oil_emp(thousands): Amount of individuals employed in the oil industry in the United states. Due to how the data was collected, this did not vary across states, only month and year.
+* U.S. Field Production of Crude Oil: US production of crude oil, measured in thousand of barrels per day. Data for this variable was only available per year, so it was the same by state and month.
+* Labor Force Participation Rate: Percentage of a state’s eligible working population that was participating in the labor force.
+* Employment-Population Rate: The rate civilian labor force employed in the state against the total amount of working age population in the state by month.
+* Gen data: This is data such as gas_gen and hydro_gen that measures the total generation of power by that type in the state measured in megawatthours.
+* Temp and Temp_anomaly: Average temperature in a state for the given month and how much that average temperature deviates from the mean temperature for the state over the time period the data was taken.
+
+
+
 
 Daniel will talk about collecting unemployment here.
 
@@ -38,6 +58,8 @@ baseline (Daniel)
 Lasso(Daniel and Musab)
 
 randomforest(Jacob)
+
+The other model we used to forecast energy prices was the tree model, specifically a randomforest model. We opted to used randomforest due to its strong out of box performance and relatively few parameters that would be needed to adjusted to optimize its performance. It's method of selecting only a fraction of features in each of its trees also acted as a usefule form of cross validation. We tested 3 randomforest models. The first took the form `Cents/kWh` ~ Year + Month + State + Thousand_dollars +  Megawatthours + Count + oil_emp + US_Oil_Prod + Lab_part + Employ_rate + UR + coal_gen + hydro_gen + gas_gen + other_gen + petro_gen + solar_gen + biomass_gen + wind_gen + nuclear_gen + other_gas_gen + pump_gen + Temp + Temp_Anomaly, plugging in all variables we had identified in our data frame. The second random forest model took the first 5 principal components of entire data frame. Since tree models are prone to overfitting data with large amounts of features, we decided to test this model to avoid overfitting and using a lower dimensional summary of the data we relied. Finally, the third model randomforest model relied on the first 5 principal components of the energy generation data (coal_gen, hydro_gen, etc) along with the variables Year,  Month, State, thousand_dollars, Megawatthours, Count, oil_emp, US_Oil_Prod, Lab_part, Employ_rate, and UR. We used this model to provide a lower dimensional summary of the energy data with having to combine that summary with variables that might not related to energy generation (such as unemployment or labor force participation).
 
 # Results
 
