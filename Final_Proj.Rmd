@@ -1,0 +1,84 @@
+---
+title: "ECO-395M Final Project"
+output: html_document
+date: "2024-04-27"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r, include = FALSE}
+# Packages go here
+```
+# Abstract
+
+# Introduction
+
+# Methods
+
+First talk about data collection
+Jacob can talk about collecting energy data here. Explain variable of interest here as well (cents per kilowatt hour) Also talking about temp collection
+
+Daniel will talk about collecting unemployment here.
+
+
+Then we list all variables and their units that will be included in the model.
+
+Talk about initial data analysis
+Musab and Daniel will process for analyzing data for unemployment and energy prices.
+
+Daniel will talk about analyzing temperature and Energy
+
+Jacob will talk about analzying energy generation and energy prices
+
+Then discuss the models we will use
+baseline (Daniel)
+
+Lasso(Daniel and Musab)
+
+randomforest(Jacob)
+
+# Results
+
+Results of visualization here
+
+Start with Daniel and Musab discussing the results of their analysis of unemployment and gas prices
+
+Daniel shows results of temperature
+
+Jacob shows results of energy generation
+
+Daniel discuss results of base
+
+Daniel and Musab discuss results of Lasso
+
+Jacob discusses results of random forest
+
+
+# Conclusion
+
+Determine which one is the best.
+
+# Appendix
+
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r cars}
+summary(cars)
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
