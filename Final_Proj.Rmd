@@ -203,6 +203,8 @@ ggplot(time_correlations, aes(x = Time, y = correlation)) +
 
 This visualization explores the total correlation between unemployment rate and energy costs over time. We see a sharp increase in the correlation between these measures at the onset of the COVID-19 Pandemic in March 2020. There are several potentially overlapping explanations for this insight. First, the pandemic caused a severe economic disruption in the labor market and energy sector, thus the sharp increase in correlation could indicate that these two variables were simulatenously affected by this economic shock. The increase in unemployment caused by the pandemic also led to many people working from home or otherwise altering their daily routine, thus shifting their energy consumption demand patterns. 
 
+### Temperature and Energy Prices
+
 ```{r, echo=FALSE}
 data <- data %>%
   mutate(Temp = as.numeric(Temp))
@@ -232,16 +234,10 @@ ggplot(time_correlations_temp_energy, aes(x = Time, y = correlation)) +
 
 This visualization shows the correlation between temperature and energy costs over time, a relationship that is key to understanding how weather influences consumer energy expenditures. We observe a distinct cyclical pattern in the correlation between these variables, indicating that their relationship is influenced by seasonal factors—likely varying energy demands for heating and cooling throughout the year.
 
-Results of visualization here
-
-Start with Daniel and Musab discussing the results of their analysis of unemployment and gas prices
-
-Daniel shows results of temperature
-
-Jacob shows results of energy generation
-### Energy Generation and Energy Prices Results
+### Energy Generation and Energy Prices 
 
 Plotting aver energy price in cents per kilowatt hour against total energy generation for a given month in a state produces the following the graph:
+
 ```{r, include = FALSE}
 # Establishing relationship between energy generation and energy prices.
 energy_gen_data = read_csv("C://Users/jacob/OneDrive/Documents/ECO-395M-Final-Project/Modified_data/final_data.csv") %>% 
@@ -258,6 +254,7 @@ ggplot(energy_gen_monthly) +
   (geom_point(aes(x=energy_total, y = `Cents/kWh`)))
 
 ```
+
 The relationship appears to be negative, but there is variation and significant clustering of data. Next, looking into the correlation of between energy production and energy prices produces these results. The first column is the estimated correlation between energy prices in cents per kilowatt hours while the second is the estimate p-value of that correlation.
 
 ```{r, include = FALSE}
@@ -327,6 +324,7 @@ rownames(Energy_correlation) = c("Total Energy Production", "Coal",
                                 "Biomass", "Wind" , "Nuclear", "Other Gas")
 Energy_correlation
 ```
+
 As the scatter plot suggested, the top line correlation between total energy production and energy prices is negative. It is also statistically significant, although the actual value of the correlation is small, about 0.16. With the exception of petro, all energy generation types have a statistically significant correlation with energy prices, albeit of varying size and direction. About half are negative and half are positive. The largest is coal, which has a correlation of -0.41 with energy prices. These result would appear to be counterintuitive; it should be expected that energy generation's correlation with prices should not vary with type. However, since these correlations are not capturing a causal relationship, energy production may still be useful in estimating energy prices.    
 
 
@@ -336,7 +334,46 @@ Daniel and Musab discuss results of Lasso
 
 Jacob discusses results of random forest
 
-## Randorm Forest Results
+## Model Performance
+
+Next we will move onto the performance of the models we developed. We will start with the baseline kitchen sink model, then the LASSO model, and then finally the randomforest model
+
+### Baseline "Kitchen Sink" Model
+
+```{r, echo=FALSE}
+
+baseline_model <- lm(`Cents/kWh` ~ Year + Month + State + `Thousand Dollars` + Megawatthours + 
+                       Count + `oil_emp(thousands)` + `U.S. Field Production of Crude Oil Thousand Barrels per Day` + 
+                       `Labor Force Participation` + `Employment-Population Rate` + 
+                       `Unemployment Rate` + coal_gen + hydro_gen + gas_gen + 
+                       other_gen + petro_gen + solar_gen + biomass_gen + 
+                       wind_gen + nuclear_gen + other_gas_gen + pump_gen + 
+                       Temp + Temp_Anomaly, 
+                     data = train_set)
+
+summary(baseline_model)
+
+```
+### LASSO Regression Results
+```{r, echo=FALSE}
+X <- model.matrix(`Cents/kWh` ~ ., data = train_set)
+Y <- train_set$`Cents/kWh`
+
+# Perform cross-validated Lasso regression
+cv <- cv.glmnet(X, Y, alpha = 1)
+
+plot(cv)
+
+# Select the alpha value with the lowest mean cross-validated error
+best_alpha <- cv$lambda.min
+best_alpha
+lasso_model <- glmnet(X, Y, alpha = 1, lambda = best_alpha)
+
+final_lasso <- glmnet(X, Y, alpha = 1, lambda = best_alpha, standardize = TRUE)
+```
+
+
+### Randorm Forest Results
 ```{r, include = FALSE}
 
 # Converting energy data to PCA
@@ -444,7 +481,9 @@ PCA_energy.forest = randomForest(`Cents/kWh` ~ PC1 + PC2 + PC3 + PC4 + PC5
 ```{r, echo = FALSE}
 modelr::rmse(PCA_energy.forest, PCA_energy_test)
 ```
+
 Finally we have the tree model with the energy generation being summarized by the first 5 principal components. This model had 16 features, so each tree generated had 4 features included. The RMSE of this model is:
+
 ```{r, include = FALSE, cache = TRUE}
 # Do PCA applied to only power generation
 PCA_gen = state_pca_gen %>%
@@ -468,6 +507,19 @@ PCA_gen.forest = randomForest(`Cents/kWh` ~ PC1 + PC2 + PC3 + PC4 + PC5
 modelr::rmse(PCA_gen.forest, PCA_gen_test)
 ```
 
+## Model Comparison
+
+```{r, echo=FALSE}
+baseline_predictions <- predict(baseline_model, newdata = test_set)
+lasso_predictions <- predict(final_lasso, newx = model.matrix(`Cents/kWh` ~ ., data = test_set))
+
+baseline_rmse <- sqrt(mean((baseline_predictions - test_set$`Cents/kWh`)^2))
+lasso_rmse <- sqrt(mean((lasso_predictions - test_set$`Cents/kWh`)^2))
+
+baseline_rmse
+lasso_rmse
+
+```
 
 
 # Conclusion
