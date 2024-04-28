@@ -232,6 +232,7 @@ lasso_model <- glmnet(X, Y, alpha = 1, lambda = best_alpha)
 
 final_lasso <- glmnet(X, Y, alpha = 1, lambda = best_alpha, standardize = TRUE)
 ```
+The visualization of the mean squared error (MSE) from a cross-validation procedure for different values of lambda (λ) during LASSO regression. model has identified an optimal level of complexity that balances fitting the data well with not being overly complex. The chosen lambda (0.0004015172) A small lambda like this one suggests only a small penalty on the model's complexity, so most predictors are likely kept in the model rather than being driven to zero. suggests that a good number of predictors are used, but it also likely eliminated some, as LASSO is designed to do, leading to a model that's easier to interpret and possibly more robust to new data. 
 
 ## Model Comparison
 ```{r, echo=FALSE}
