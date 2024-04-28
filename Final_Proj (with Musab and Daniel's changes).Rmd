@@ -52,8 +52,8 @@ randomforest(Jacob)
 average_values <- data %>%
   group_by(Year, Month) %>%
   summarise(
-    AverageCentsPerKWh = mean(Cents.kWh, na.rm = TRUE),
-    AverageUnemploymentRate = mean(UnemploymentRate, na.rm = TRUE)
+    AverageCentsPerKWh = mean('Cents.kWh', na.rm = TRUE),
+    AverageUnemploymentRate = mean('Unemployment Rate', na.rm = TRUE)
   ) %>%
   arrange(Year, Month)
 
@@ -195,6 +195,12 @@ Jacob shows results of energy generation
 
 ## Baseline Linear Model: 
 ```{r, echo=FALSE}
+
+set.seed(123) 
+split <- initial_split(data, prop = 0.8)  
+
+train_set <- training(split)
+test_set <- testing(split)
 
 baseline_model <- lm(`Cents/kWh` ~ Year + Month + State + `Thousand Dollars` + Megawatthours + 
                        Count + `oil_emp(thousands)` + `U.S. Field Production of Crude Oil Thousand Barrels per Day` + 
