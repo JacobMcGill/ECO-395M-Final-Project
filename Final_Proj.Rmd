@@ -24,6 +24,15 @@ library(rsample)
 library(mosaic)
 library(caret)
 library(modelr)
+library(dplyr)
+library(readr)
+library(ggplot2)
+library(readxl)
+library(tidyverse)
+library(reshape2)
+library(glmnet)
+library(rsample)
+data <- read_csv("/Users/danieloliner/Downloads/final_data.csv")
 ```
 # Abstract
 
@@ -36,7 +45,7 @@ First talk about data collection
 ## Data Collection
 
 Jacob can talk about collecting energy data here. Explain variable of interest here as well (cents per kilowatt hour) Also talking about temp collection.
-To construct our data set, we collected data from several sources. For the data on monthly energy prices, we used the Energy Information Agency’s (EIA) Monthly Electric Power Industry March 2024 report, specifically its reported price in cents per kilowatt hour in the “Total” category. We also used the EIA’s report on monthly energy generation by state, producer sector, and energy source, focusing just on data from the Total Electric Power Industry producer type, which is the sum of the power generation for all other types. NOTE: I determine this by spot checking the Alaska Coal generation data for January 2018 and found that all other categories for coal in Alaska in that month added up to Total Electric Power Industry. END NOTE. We extracted all energy categories from it. We also relied on data from FRED, including data on the number of Americans employed in the Oil Industry and US Production of Crude Oil. We also relied on data from the Bureau of Labor Statistics for monthly unemployment data by state, including monthly unemployment rate, labor force participation and employment population rate for each state. Finally, we used data from the National Centers for Environmental Information on average state monthly temperature (in Fahrenheit) and how that temperature deviated from the mean temperature of that state.
+To construct our data set, we collected data from several sources. For the data on monthly energy prices, we used the Energy Information Agency’s (EIA) Monthly Electric Power Industry March 2024 report, specifically its reported price in cents per kilowatt hour in the “Total” category. We also used the EIA’s report on monthly energy generation by state, producer sector, and energy source, focusing just on data from the Total Electric Power Industry producer type, which is the sum of the power generation for all other types.  We extracted all energy categories from it. We also relied on data from FRED, including data on the number of Americans employed in the Oil Industry and US Production of Crude Oil. We included data from the National Centers for Environmental Information on average state monthly temperature (in Fahrenheit) and how that temperature deviated from the mean temperature of that state. For state-level monthly employment data, we utilized Local Area Unemployment Statistics (LAUS) measures published by the Bureau of Labor Statistics (BLS). This data includes civilian labor force, employed people, unemployed people, and unemployment rates. We also used this data to engineer a new variable capturing montly state-level labor force participation rates by month.
 
 The variables included in our final dataset are:
 * Year, Month: The year and month the observation was recorded the observation.
@@ -51,35 +60,27 @@ The variables included in our final dataset are:
 * Gen data: This is data such as gas_gen and hydro_gen that measures the total generation of power by that type in the state measured in megawatthours.
 * Temp and Temp_anomaly: Average temperature in a state for the given month and how much that average temperature deviates from the mean temperature for the state over the time period the data was taken.
 
-
-
-
-Daniel will talk about collecting unemployment here.
-
-
-Then we list all variables and their units that will be included in the model.
-
 ## Exploratory Data Analysis 
 
-Talk about initial data analysis
-Musab and Daniel will process for analyzing data for unemployment and energy prices.
+Before jumping into any complex modeling, it's crucial to visualize the data to understand the trends, patterns, and potential relationships. We began with a preliminary analysis to determine whether there is a relationship between unemployment rates and electricity prices. This relationship may indicate underlying economic reasons that both variables may be responding to. By looking at different time periods, we will determine whether the relationship between the variables changed over time, such as before, during, and after significant events like the COVID-19 pandemic. 
 
-Daniel will talk about analyzing temperature and Energy
+We also analyzed the relationship between monthly temperatures and energy costs, a crucial factor in assessing the impact of seasonal variations on energy costs. This analysis aims to uncover the extent to which temperature fluctuations drive changes in energy consumption and pricing. By exploring this correlation, we sought to determine how consumer energy expenditures respond to the seasonal patterns that may impact energy consumption.
 
-Jacob will talk about analzying energy generation and energy prices
 We also looked at the relationship between energy generation and electricity price in cents/kWh. To do this, I calculated the total energy generation by state for a month and the average energy price in cents per kilowatt hour for each state for a month and found the correlation between the two to gen a general overview of the relationship between the 2. I also found the correlation between the individual energy generation types (petro, hydro, etc.) and energy price to look at the relationship between energy generation and energy prices. While this relationship is not causal, it may provide some insight on the effectiviness of this data in predicting energy prices.
 
-Then discuss the models we will use
-baseline (Daniel)
+## Model Construction
 
-Lasso(Daniel and Musab)
+We began by constructing a baseline linear regression model that incorporates all available variables in our dataset—essentially everything but the kitchen sink. This approach allows us to understand the foundational relationships between energy costs and a wide array of factors, including economic indicators, energy production metrics, and climate variables. We can also use this model as the "baseline" to compare the performance of our other other models against it.
 
-randomforest(Jacob)
+We then constructed a LASSO regression model to further refine our understanding by applying a regularization technique that helps prevent overfitting and enhances the interpretability of the model. Using cross-validated Lasso regression, we determined the optimal lambda value that minimizes error, ensuring our model is both accurate and robust.
 
-The other model we used to forecast energy prices was the tree model, specifically a randomforest model. We opted to used randomforest due to its strong out of box performance and relatively few parameters that would be needed to adjusted to optimize its performance. It's method of selecting only a fraction of features in each of its trees also acted as a usefule form of cross validation. We tested 3 randomforest models. The first took the form `Cents/kWh` ~ Year + Month + State + Thousand_dollars +  Megawatthours + Count + oil_emp + US_Oil_Prod + Lab_part + Employ_rate + UR + coal_gen + hydro_gen + gas_gen + other_gen + petro_gen + solar_gen + biomass_gen + wind_gen + nuclear_gen + other_gas_gen + pump_gen + Temp + Temp_Anomaly, plugging in all variables we had identified in our data frame. The second random forest model took the first 5 principal components of entire data frame. Since tree models are prone to overfitting data with large amounts of features, we decided to test this model to avoid overfitting and using a lower dimensional summary of the data we relied. However, since this dataset was created by combining smaller data sets that were not closely related (such as unemployment and monthly temperature with energy production) there may be a concern that a PCA of elements of the data set may not effectively capture variation in the data. To address this concern while still using some lower dimensional summary of the data, we also estimated an third randomforest model that relied on the first 5 principal components of the energy generation data (coal_gen, hydro_gen, etc) along with the variables Year,  Month, State, thousand_dollars, Megawatthours, Count, oil_emp, US_Oil_Prod, Lab_part, Employ_rate, and UR. We used this model to provide a lower dimensional summary of the energy data with having to combine that summary with variables that might not related to energy generation (such as unemployment or labor force participation). The random forests will be trained on 80% of the data and tested on the remaining 20%.
+The other model we used to forecast energy prices was the tree model, specifically a randomforest model. The idea behind this model was to develop a model that would be better at predicting energy prices, despite having less interpretability. We opted to used randomforest due to its strong out of box performance and relatively few parameters that would be needed to adjusted to optimize its performance. It's method of selecting only a fraction of features in each of its trees also acted as a usefule form of cross validation. We tested 3 randomforest models. The first took the form `Cents/kWh` ~ Year + Month + State + Thousand_dollars +  Megawatthours + Count + oil_emp + US_Oil_Prod + Lab_part + Employ_rate + UR + coal_gen + hydro_gen + gas_gen + other_gen + petro_gen + solar_gen + biomass_gen + wind_gen + nuclear_gen + other_gas_gen + pump_gen + Temp + Temp_Anomaly, plugging in all variables we had identified in our data frame. The second random forest model took the first 5 principal components of entire data frame. Since tree models are prone to overfitting data with large amounts of features, we decided to test this model to avoid overfitting and using a lower dimensional summary of the data we relied. However, since this dataset was created by combining smaller data sets that were not closely related (such as unemployment and monthly temperature with energy production) there may be a concern that a PCA of elements of the data set may not effectively capture variation in the data. To address this concern while still using some lower dimensional summary of the data, we also estimated an third randomforest model that relied on the first 5 principal components of the energy generation data (coal_gen, hydro_gen, etc) along with the variables Year,  Month, State, thousand_dollars, Megawatthours, Count, oil_emp, US_Oil_Prod, Lab_part, Employ_rate, and UR. We used this model to provide a lower dimensional summary of the energy data with having to combine that summary with variables that might not related to energy generation (such as unemployment or labor force participation). 
+
+All models were trained and tested on 80-20 split, with 80% of the data used to train the data and 20% used to test the data. We used Root Mean Square Error (RMSE) to assess the performance of the models.
 
 # Results
 
+## Data Visualizations
 Results of visualization here
 
 Start with Daniel and Musab discussing the results of their analysis of unemployment and gas prices
