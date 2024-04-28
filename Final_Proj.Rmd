@@ -32,7 +32,7 @@ library(tidyverse)
 library(reshape2)
 library(glmnet)
 library(rsample)
-data <- read_csv("/Users/danieloliner/Downloads/final_data.csv")
+data <- read_csv("C://Users/jacob/OneDrive/Documents/ECO-395M-Final-Project/Modified_data/final_data.csv")
 ```
 # Abstract
 
@@ -327,20 +327,18 @@ Energy_correlation
 
 As the scatter plot suggested, the top line correlation between total energy production and energy prices is negative. It is also statistically significant, although the actual value of the correlation is small, about 0.16. With the exception of petro, all energy generation types have a statistically significant correlation with energy prices, albeit of varying size and direction. About half are negative and half are positive. The largest is coal, which has a correlation of -0.41 with energy prices. These result would appear to be counterintuitive; it should be expected that energy generation's correlation with prices should not vary with type. However, since these correlations are not capturing a causal relationship, energy production may still be useful in estimating energy prices.    
 
-
-Daniel discuss results of base
-
-Daniel and Musab discuss results of Lasso
-
-Jacob discusses results of random forest
-
 ## Model Performance
 
-Next we will move onto the performance of the models we developed. We will start with the baseline kitchen sink model, then the LASSO model, and then finally the randomforest model
+Next we will move onto the results of the models we developed. We will start with the baseline kitchen sink model, then the LASSO model, and then finally the randomforest model. Finally, we will compare their performance using RMSE.
 
 ### Baseline "Kitchen Sink" Model
 
 ```{r, echo=FALSE}
+set.seed(123) 
+split <- initial_split(data, prop = 0.8)  
+
+train_set <- training(split)
+test_set <- testing(split)
 
 baseline_model <- lm(`Cents/kWh` ~ Year + Month + State + `Thousand Dollars` + Megawatthours + 
                        Count + `oil_emp(thousands)` + `U.S. Field Production of Crude Oil Thousand Barrels per Day` + 
@@ -355,7 +353,8 @@ summary(baseline_model)
 
 ```
 ### LASSO Regression Results
-```{r, echo=FALSE}
+
+```{r, echo=FALSE, cache = FALSE}
 X <- model.matrix(`Cents/kWh` ~ ., data = train_set)
 Y <- train_set$`Cents/kWh`
 
@@ -370,6 +369,10 @@ best_alpha
 lasso_model <- glmnet(X, Y, alpha = 1, lambda = best_alpha)
 
 final_lasso <- glmnet(X, Y, alpha = 1, lambda = best_alpha, standardize = TRUE)
+```
+```{r, echo = FALSE}
+lasso_coefficients = coef(final_lasso, s = best_alpha)
+print(lasso_coefficients)
 ```
 
 
@@ -441,7 +444,7 @@ state_pca_gen = merge(baseline, PCA_gen$x[,1:5], by="row.names") %>%
   arrange(desc(Month), desc(Year), State)
 ```
 
-For our baseline randomforest model, we generated it from 1000 trees with 5 features in each. We selected 5 features for this model as the square root of the number of features was recommended as a rule of thumb and the baseline random forest model had 25 features. The RMSE for this model is: 
+For our baseline randomforest model, we generated it from 1000 trees with 5 features in each. We selected 5 features for this model as the square root of the number of features was recommended as a rule of thumb and the baseline random forest model had 25 features. The inclement mean squared error of each variable in the model is also shown below. This measures how much including the variable in the model improves its performance.
 
 ```{r, include = FALSE, cache = TRUE}
 # Now we will move onto random forest
@@ -463,11 +466,14 @@ energy.forest = randomForest(`Cents/kWh` ~ Year + Month + State + Thousand_dolla
                              + wind_gen + nuclear_gen + other_gas_gen 
                              + pump_gen + Temp + Temp_Anomaly, data= energy_train, ntree = 1000, mtry = 5, importance = TRUE)
 ```
-```{r, echo = FALSE}
-modelr::rmse(energy.forest, energy_test)
+```{r, include = FALSE}
+energy_rmse = modelr::rmse(energy.forest, energy_test)
 ```
-
-Next we will find the RMSE for the PCA random forest model. Since this model has 8 features (the first 5 principal components and State, Month, and Year), we randomly generated 1000 trees with 3 features in each tree.
+```{r, echo = FALSE}
+energy.forest$importance
+```
+As can be seen, Megawatt hours and coal_gen have the most predictive power in this model.
+Next we will generate the PCA random forest model. Since this model has 8 features (the first 5 principal components and State, Month, and Year), we randomly generated 1000 trees with 3 features in each tree. We also graphed inclement mean squared error of each variable in the model.
 
 ```{r, include = FALSE, cache = TRUE}
 modelr::rmse(energy.forest, energy_test)
@@ -478,11 +484,15 @@ PCA_energy_test = testing(PCA_energy_split)
 PCA_energy.forest = randomForest(`Cents/kWh` ~ PC1 + PC2 + PC3 + PC4 + PC5 
                                  + State + Month + Year, data= PCA_energy_train, ntree = 1000, mtry = 3, importance = TRUE)
 ```
-```{r, echo = FALSE}
-modelr::rmse(PCA_energy.forest, PCA_energy_test)
+```{r, include = FALSE}
+PCA_RMSE = modelr::rmse(PCA_energy.forest, PCA_energy_test)
 ```
+```{r, echo = FALSE}
+PCA_energy.forest$importance
+```
+The two variables with the highest contribution to the model are the State variables and the 3rd principal component.
 
-Finally we have the tree model with the energy generation being summarized by the first 5 principal components. This model had 16 features, so each tree generated had 4 features included. The RMSE of this model is:
+Finally we have the tree model with the energy generation being summarized by the first 5 principal components. This model had 16 features, so each tree generated had 4 features included. The inclement MSE of each variable in the model is:
 
 ```{r, include = FALSE, cache = TRUE}
 # Do PCA applied to only power generation
@@ -503,11 +513,17 @@ PCA_gen.forest = randomForest(`Cents/kWh` ~ PC1 + PC2 + PC3 + PC4 + PC5
                                 Megawatthours + Count + oil_emp 
                               + US_Oil_Prod + Lab_part + Employ_rate + UR, data= PCA_gen_train, ntree = 1000, mtry = 4, importance = TRUE)
 ```
-```{r, echo = FALSE}
-modelr::rmse(PCA_gen.forest, PCA_gen_test)
+```{r, include = FALSE}
+PCA_gen_RMSE = modelr::rmse(PCA_gen.forest, PCA_gen_test)
 ```
+```{r, echo = FALSE}
+PCA_gen.forest$importance
+```
+Here, Megawatt hours still significantly contributes to the model, having the highest inclemented Mean Squared Error. However, the 2nd principal component of the energy data now has the second highest inclement mean squared error.
 
-## Model Comparison
+### Model Comparison
+
+Finally, we will move onto to comparing the rootn mean squared error of the 5 moidels we tested.
 
 ```{r, echo=FALSE}
 baseline_predictions <- predict(baseline_model, newdata = test_set)
@@ -518,9 +534,11 @@ lasso_rmse <- sqrt(mean((lasso_predictions - test_set$`Cents/kWh`)^2))
 
 baseline_rmse
 lasso_rmse
-
+energy_rmse
+PCA_RMSE
+PCA_gen_RMSE
 ```
-
+Our baseline model had an RMSE of 0.662. All 4 other models outperformed it, with the randomforest model that included all variables performing the best. However, the 
 
 # Conclusion
 
