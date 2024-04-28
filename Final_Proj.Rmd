@@ -10,12 +10,17 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ```{r, include = FALSE}
 # Packages go here
+library(dplyr)
+library(readr)
+library(ggplot2)
 ```
 # Abstract
 
 # Introduction
 
 # Methods
+
+Before jumping into any complex modeling, it's crucial to visualize the data to understand the trends, patterns, and potential relationships. The purpose of the graphs was to perform a preliminary analysis to determine whether there is a relationship between unemployment rates and electricity prices If there is, this relationship may indicate underlying economic reasons that both variables may be responding to. By looking at different time periods, we could determine if the relationship between the variables changed over time, such as before, during, and after significant events like the COVID-19 pandemic. 
 
 First talk about data collection
 Jacob can talk about collecting energy data here. Explain variable of interest here as well (cents per kilowatt hour) Also talking about temp collection
@@ -40,6 +45,94 @@ Lasso(Daniel and Musab)
 randomforest(Jacob)
 
 # Results
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+average_values <- data %>%
+  group_by(Year, Month) %>%
+  summarise(
+    AverageCentsPerKWh = mean(Cents.kWh, na.rm = TRUE),
+    AverageUnemploymentRate = mean(UnemploymentRate, na.rm = TRUE)
+  ) %>%
+  arrange(Year, Month)
+
+print(average_values)
+```
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+average_values$Date <- as.Date(paste(average_values$Year, average_values$Month, "01", sep = "-"))
+
+filtered_data <- average_values %>%
+  filter(Date >= as.Date("2020-06-01") & Date <= as.Date("2023-12-31"))
+
+max_cents <- max(filtered_data$AverageCentsPerKWh, na.rm = TRUE)
+max_unemployment_rate <- max(filtered_data$AverageUnemploymentRate, na.rm = TRUE)
+
+ggplot(filtered_data) +
+  geom_col(aes(x = Date, y = AverageUnemploymentRate), fill = "red", alpha = 0.5) +
+  geom_line(aes(x = Date, y = AverageCentsPerKWh * max_unemployment_rate / max_cents), color = "blue") +
+  scale_y_continuous(
+    name = "Average Unemployment Rate (%)",
+    limits = c(0, max_unemployment_rate),
+    sec.axis = sec_axis(~ . * max_cents / max_unemployment_rate, name="Average Cents per kWh")
+  ) +
+  labs(
+    title = "Monthly Average Cents per kWh and Unemployment Rate",
+    x = "Date",
+    y = "Average Unemployment Rate (%)",
+    caption = "Note: Blue line represents Average Cents per kWh; Red columns represent Unemployment Rate."
+  ) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+```
+We graphing data from June 2020 onward because the initial economic disruption caused by the onset of COVID-19 began to stabilize, potentially offering a more normalized view of the relationship between unemployment rates and energy costs in the emerging post-pandemic conditions. 
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+average_values$Date <- as.Date(paste(average_values$Year, average_values$Month, "01", sep = "-"))
+
+
+filtered_data <- average_values %>%
+  filter(Date >= as.Date("2018-01-01") & Date <= as.Date("2019-12-31"))
+
+max_cents <- max(filtered_data$AverageCentsPerKWh, na.rm = TRUE)
+max_unemployment_rate <- max(filtered_data$AverageUnemploymentRate, na.rm = TRUE)
+
+
+ggplot(filtered_data) +
+  geom_col(aes(x = Date, y = AverageUnemploymentRate), fill = "red", alpha = 0.5) +
+  geom_line(aes(x = Date, y = AverageCentsPerKWh * max_unemployment_rate / max_cents), color = "blue") +
+  scale_y_continuous(
+    name = "Average Unemployment Rate (%)",
+    limits = c(0, max_unemployment_rate),
+    sec.axis = sec_axis(~ . * max_cents / max_unemployment_rate, name="Average Cents per kWh")
+  ) +
+  labs(
+    title = "Monthly Average Cents per kWh and Unemployment Rate (January 2018 - May 2020)",
+    x = "Date",
+    y = "Average Unemployment Rate (%)",
+    caption = "Note: Blue line represents Average Cents per kWh; Red columns represent Unemployment Rate."
+  ) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+```
+After examining the graph plotting electricity prices against unemployment rates from 2018 to 2020, we see distinct patterns but cannot discern the nature of their relationship purely by observation. Therefore, to quantitatively assess the relationship between these two variables, we will conduct a correlation test. This statistical test will help us determine whether there's a statistically significant correlation between the electricity prices and the unemployment rates during this period, and if so, how strong that correlation is.
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+
+data_2018_2019 <- data %>%
+  filter(Year >= 2018 & Year <= 2019) %>%
+  select(Cents.kWh, UnemploymentRate)
+
+data_2021_2023 <- data %>%
+  filter(Year >= 2021 & Year <= 2023) %>%
+  select(Cents.kWh, UnemploymentRate)
+
+cor_test_2018_2019 <- cor.test(data_2018_2019$Cents.kWh, data_2018_2019$UnemploymentRate, use = "complete.obs")
+cor_test_2021_2023 <- cor.test(data_2021_2023$Cents.kWh, data_2021_2023$UnemploymentRate, use = "complete.obs")
+
+print(cor_test_2018_2019)
+print(cor_test_2021_2023)
+```
+The correlation coefficient of -0.085 between 2018 and 2019 is slightly negative relationship. However, the relationship is weak. The correlation coefficient of 0.055 between 2021 and 2023  is slightly positive. However, it is also a weak relationship. Both periods show statistical significance with p-values less than 0.05, but given the weak correlation coefficients, the practical significance of these relationships is limited.
 
 Results of visualization here
 
