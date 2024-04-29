@@ -1,5 +1,5 @@
 ---
-title: "ECO-395M Final Project: Musab Aluqaee, Daniel Oliner, and Jacob McGill"
+title: "ECO-395M Final Project: Musab Alquwaee, Daniel Oliner, and Jacob McGill"
 output:
   word_document: default
   html_document: default
