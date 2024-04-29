@@ -1,9 +1,9 @@
 ---
 title: "ECO-395M Final Project: Musab Alquwaee, Daniel Oliner, and Jacob McGill"
 output:
-  word_document: default
-  html_document: default
   pdf_document: default
+  html_document: default
+  word_document: default
 date: "2024-04-27"
 ---
 
@@ -38,56 +38,58 @@ library(rsample)
 data <- read_csv("C://Users/jacob/OneDrive/Documents/ECO-395M-Final-Project/Modified_data/final_data.csv") %>%
   select(-5) 
 ```
+
 # Abstract
 
-We attempted to use data relating to energy production, employment rates, and temperature to predict average energy prices in the US from 2018 to 2023. We conducted an initial analysis looking at the strength of the relationship between energy prices and variables that represented those above factors and found a present but not strong relationship. We then used a linear regression, LASSO regression, and random forest model to attempt to predict the prices in order to determine the best performing model in terms of RMSE. We found that the random forest model has the best performance of the 3.
+We attempted to use data relating to energy production, employment rates, and temperature to predict average energy prices in the US from 2018 to 2023. We conducted an initial analysis looking at the strength of the relationship between energy prices and variables that represented those above factors and found a present but not strong relationship. We then used a linear regression, LASSO regression, and random forest models to attempt to predict the prices in order to determine the best performing model in terms of RMSE. We found that the random forest model had the best performance of the 3.
 
 # Introduction
 
-This project tries to determine if data related to energy generation and economic activity can be used to effectively predict energy prices. Energy prices play a significant role in the world politics and economics. For example, the oil crisis of the 1970s helped spur the stagflation of the decade and more recently the Russian-Ukraine War has significantly impacted Europe by affecting its access to oil and liquid natural gas. Further, energy prices are driven by a large amount of both supply factors (such as the capacity of power plants and the price of inputs) and demand factors. This project attempts to both identify correlations between energy prices supply side and demand side factors as well use those factors to predict the price of energy in cents per kilowatt hour with methods such as LASSO regression and Random Forest. This could provide insight for policy makers and the energy industry on how to predict energy prices and adapt their behavior accordingly. 
+This project tries to determine if data related to energy generation and economic activity can be used to effectively predict energy prices. Energy prices play a significant role in the world politics and economics. For example, the oil crisis of the 1970s helped spur the stagflation of the decade and more recently the Russian-Ukraine War has significantly impacted Europe by affecting its access to oil and liquid natural gas. Further, energy prices are driven by both supply factors (such as the capacity of power plants and the price of inputs) and demand factors. This project attempts to both identify correlations between energy prices and potential supply side and demand side factors. It also attempts to use those factors to predict the price of energy in cents per kilowatt hour with methods such as LASSO regression and Random Forest. This could provide insight for policy makers and the energy industry on how to predict energy prices and adapt their behavior accordingly.
 
 # Methods
 
 ## Data Collection
 
-To construct our data set, we collected data from several sources for the years 2018 to 2023. For the data on monthly energy prices, we used the Energy Information Agency’s (EIA) Monthly Electric Power Industry March 2024 report. We also used the EIA’s report on monthly energy generation. We also relied on data from FRED, including data on the number of Americans employed in the Oil Industry and US Production of Crude Oil. We included data from the National Centers for Environmental Information on average state monthly temperature (in Fahrenheit) and how that temperature deviated from the mean temperature of that state. For state-level monthly employment data, we utilized measures published by the Bureau of Labor Statistics, such as unemployment rates. We also used this data to engineer a new variable capturing monthly state-level labor force participation rates by month. Links for the data sources can be found in the appendix
+To construct our data set, we collected data from several sources for the years 2018 to 2023. For the data on monthly energy prices, we used the Energy Information Agency's (EIA) Monthly Electric Power Industry March 2024 report. We also used the EIA's report on monthly energy generation. We also relied on data from the Federal Reserve Economic Data (FRED), including data on the number of Americans employed in the Oil Industry and US Production of Crude Oil. We included data from the National Centers for Environmental Information on average state monthly temperature (in Fahrenheit) and how that temperature deviated from the mean temperature of that state. For state-level monthly employment data, we utilized measures published by the Bureau of Labor Statistics, such as unemployment rates. We also used this data to engineer a new variable capturing monthly state-level labor force participation rates by month. Links for the data sources can be found in the appendix
 
 The variables included in our final dataset are:
 
-* Cents/kWh: The price of energy in cents per kilowatt hour. This is the variable we are trying to predict, the "price" of energy.
+-   Cents/kWh: The price of energy in cents per kilowatt hour. This is the variable we are trying to predict, the "price" of energy.
 
-* Year, Month, State: The year, month, and state the observation was recorded the observation. We included these variables to account for any seasonal or regional variation in prices.
+-   Year, Month, State: The year, month, and state the observation was recorded the observation. We included these variables to account for any seasonal or regional variation in prices.
 
-* Thousand Dollars: Total Revenues collected in the state for electricity generation in thousand dollars. We included these variables to account for revenue received by energy producers
+-   Thousand Dollars: Total Revenues collected in the state for electricity generation in thousand dollars. We included these variables to account for revenue received by energy producers
 
-* Megawatthours: Total sales of energy in Megawatt Hours. We included these to account for energy demand.
+-   Megawatthours: Total sales of energy in Megawatt Hours. We included these to account for energy demand.
 
-* Count: Amount of customers serviced in the state. This was also included to account for energy demand.
+-   Count: Amount of customers serviced in the state. This was also included to account for energy demand.
 
-* Oil_emp(thousands): Amount of individuals employed in the oil industry in the United states. Due to how the data was collected, this did not vary across states, only month and year. We included this variable to account for the quantity of the US energy production.
+-   Oil_emp(thousands): Amount of individuals employed in the oil industry in the United states. Due to how the data was collected, this did not vary across states, only month and year. We included this variable to account for the quantity of the US energy production.
 
-* U.S. Field Production of Crude Oil: US production of crude oil, measured in thousand of barrels per day. Data for this variable was only available per year, so it was the same by state and month. This was also included to account for the quantity of US energy production.
+-   U.S. Field Production of Crude Oil: US production of crude oil, measured in thousand of barrels per day. Data for this variable was only available per year, so it was the same by state and month. This was also included to account for the quantity of US energy production.
 
-* Labor Force Participation Rate: Percentage of a state’s eligible working population that was participating in the labor force. As labor force participating is associated with more economic activity and demand, this was included to account for increases in demand from greater economic activity.
+-   Labor Force Participation Rate: Percentage of a state's eligible working population that was participating in the labor force. As labor force participating is associated with more economic activity and demand, this was included to account for increases in demand from greater economic activity.
 
-* Unemployment Rate: The state's unemployment rate for that month. This was also included to account for the effects of economic activity on demand.
+-   Unemployment Rate: The state's unemployment rate for that month. This was also included to account for the effects of economic activity on demand.
 
-* Employment-Population Rate: The rate of civilian labor force employed in the state against the total amount of working age population in the state by month. This was also included to account for increases in demand from greater economic activity, such as more people working.
+-   Employment-Population Rate: The rate of civilian labor force employed in the state against the total amount of working age population in the state by month. This was also included to account for increases in demand from greater economic activity, such as more people working.
 
-* Gen data: This is data such as gas_gen and hydro_gen that measures the total generation of power by that type in the state measured in megawatthours. The energy types include natural gas, biomass, and solar. We included this data to account for the supply of energy in a given month and state, as well as the influence of the type of energy type.
+-   Gen data: This is data such as gas_gen and hydro_gen that measures the total generation of power by that type in the state measured in megawatthours. The energy types include natural gas, biomass, and solar. We included this data to account for the supply of energy in a given month and state, as well as the influence of the type of energy type.
 
-* Temp and Temp_anomaly: Average temperature in a state for the given month and how much that average temperature deviates from the mean temperature for the state over the time period the data was taken. We included this data to account for variations in demand to weather.
+-   Temp and Temp_anomaly: Average temperature in a state for the given month and how much that average temperature deviates from the mean temperature for the state over the time period the data was taken. We included this data to account for variations in demand to weather. This was measured in Fahrenheit.
 
-## Initial Data Analysis 
+## Initial Data Analysis
 
-To determine if variables such as energy generation and unemployment rates could predict energy prices, we started by looking at the correlation between energy prices and several variables. We focused on the correlation between the price of energy and unemployment rate, average temperature, and energy generation. We conducted this initial analysis to see if it indicated any predictive relationship between those variables and energy costs. For example, we wanted to see if an increase in unemployment was associated with lower energy prices, if higher energy prices were associated with higher energy costs, or if more energy generation predicted lower prices. 
+To determine if variables such as energy generation and unemployment rates could predict energy prices, we started by looking at the correlation between energy prices and several variables. We focused on the correlation between the price of energy and unemployment rate, average temperature, and energy generation. We conducted this initial analysis to see if it indicated any predictive relationship between those variables and energy costs. For example, we wanted to see if an increase in unemployment was associated with lower energy prices, if higher energy prices were associated with higher energy costs, or if more energy generation predicted lower prices.
 
 ## Model Construction
-To predict energy prices, we relied on 3 types of models: a baseline linear regression model, a LASSO regression, and a random forest model. The baseline linear regression model incorporated all available variables in our data set—essentially everything but the kitchen sink. This model would act as the "baseline" to compare the performance of our other other models against it.
+
+To predict energy prices, we relied on 3 types of models: a baseline linear regression model, a LASSO regression, and a random forest model. The baseline linear regression model incorporated all available variables in our data set---essentially everything but the kitchen sink. This model would act as the "baseline" to compare the performance of our other other models against it.
 
 We then constructed a LASSO regression model. Since the LASSO model's regularization technique helps prevent overfitting and enhances the ability to interpret the model, we hoped it could provide a model that would balance interpretability with predictive power. We determined the optimal lambda for the LASSO regression using cross validation.
 
-The third model we used for forecasting was a random forest model. The idea behind this model was to develop a model that would be better at predicting energy prices and could more easily incorporate qualitative features such as states and month than the other 2 models at the cost of interpretability. We developed a random forest model that used all features in our data set. 
+The third model we used for forecasting was a random forest model. The idea behind this model was to develop a model that would be better at predicting energy prices and could more easily incorporate qualitative features such as states and month than the other 2 models at the cost of interpretability. We developed a random forest model that used all features in our data set.
 
 All models were trained and tested on 80-20 split, with 80% of the data used to train the data and 20% used to test the data. We used Root Mean Square Error (RMSE) to assess the performance of the models.
 
@@ -100,7 +102,6 @@ We will start by going over the results of our initial data analyis, then the re
 ### Unemployment and Energy Prices
 
 To take a preliminary look at the relationship between we conducted a correlation test to determine if a statistically significant correlation between the electricity prices and the unemployment rates exists during this period and the strength of that correlation.
-
 
 ```{r, echo=FALSE, warning=FALSE, message=FALSE, error = FALSE}
 
@@ -126,6 +127,7 @@ colnames(UR_correlation) = c("Estimated Correlation", "P-Value")
 rownames(UR_correlation) = c("2018-2019", "2021-2023")
 UR_correlation
 ```
+
 **Table 1**
 
 The correlation coefficient of 0.0165 between 2018 and 2019 is a slightly positive relationship but is not statistically significant. The correlation coefficient of 0.052 between 2021 and 2023is slightly positive and statistically significant. However, it is also a weak relationship. Given the weak correlation coefficients, that may suggest the predictive relationship between unemployment rate and energy prices is limited. We also looked at how the correlation between energy prices and unemployment changed over time.
@@ -157,11 +159,12 @@ ggplot(time_correlations, aes(x = Time, y = correlation)) +
 
 **Graph 1**
 
-This visualization explores the total correlation between unemployment rate and energy costs over time. We see a sharp increase in the correlation between these measures at the onset of the COVID-19 Pandemic in March 2020. There are several potentially overlapping explanations for this insight. First, the pandemic caused a severe economic disruption in the labor market and energy sector, thus the sharp increase in correlation could indicate that these two variables were simultaneously affected by this economic shock. The increase in unemployment caused by the pandemic also led to many people working from home or otherwise altering their daily routine, thus shifting their energy consumption demand patterns. 
+This visualization explores the total correlation between unemployment rate and energy costs over time. We see a sharp increase in the correlation between these measures at the onset of the COVID-19 Pandemic in March 2020. There are several potentially overlapping explanations for this insight. First, the pandemic caused a severe economic disruption in the labor market and energy sector, thus the sharp increase in correlation could indicate that these two variables were simultaneously affected by this economic shock. The increase in unemployment caused by the pandemic also led to many people working from home or otherwise altering their daily routine, thus shifting their energy consumption demand patterns.
 
 ### Temperature and Energy Prices
 
 The below visualization shows the correlation between temperature and energy costs over time, a relationship that is key to understanding how weather influences consumer energy expenditures.
+
 ```{r, echo=FALSE, message = FALSE, error = FALSE}
 data <- data %>%
   mutate(Temp = as.numeric(Temp))
@@ -191,9 +194,9 @@ ggplot(time_correlations_temp_energy, aes(x = Time, y = correlation)) +
 
 **Graph 2**
 
- We observe a distinct cyclical pattern in the correlation between these variables, indicating that their relationship is influenced by seasonal factors—likely varying energy demands for heating and cooling throughout the year.
+We observe a distinct cyclical pattern in the correlation between these variables, indicating that their relationship is influenced by seasonal factors---likely varying energy demands for heating and cooling throughout the year.
 
-### Energy Generation and Energy Prices 
+### Energy Generation and Energy Prices
 
 We also looked at the correlation between energy production and energy prices. The first column is the estimated correlation between energy prices in cents per kilowatt hours while the second is the estimate p-value of that correlation.
 
@@ -250,6 +253,7 @@ other_gas_corr = cor.test(energy_gen_data$other_gas_gen, energy_gen_data$`Cents/
 other_gas_estimate = cor(energy_gen_data$other_gas_gen, energy_gen_data$`Cents/kWh`)
 other_gas_p_value = other_gas_corr$p.value
 ```
+
 ```{r, echo = FALSE}
 Energy_correlation = matrix(c(avg_corr_estimate, avg_corr_p_value,
                              coal_estimate, coal_p_value,
@@ -271,9 +275,10 @@ rownames(Energy_correlation) = c("Total Energy Production", "Coal",
                                 "Biomass", "Wind" , "Nuclear", "Other Gas")
 Energy_correlation
 ```
+
 **Table 2**
 
-The top line correlation between total energy production and energy prices is negative. It is also statistically significant, although the actual value of the correlation is small, about 0.16. With the exception of petro, all energy generation types have a statistically significant correlation with energy prices, albeit of varying size and direction. About half are negative and half are positive. These result are counterintuitive; it should be expected that energy generation's correlation with prices should not vary with type. It may potentially be due to the expansion of some energy types (such as solar) or the cost of generating those energy types: for example if natural gas can be generated quickly but costly, it may have a positive correlation with energy price     
+The top line correlation between total energy production and energy prices is negative. It is also statistically significant, although the actual value of the correlation is small, about 0.16. With the exception of petro, all energy generation types have a statistically significant correlation with energy prices, albeit of varying size and direction. About half are negative and half are positive. These result are counterintuitive; it should be expected that energy generation's correlation with prices should not vary with type. It may potentially be due to the expansion of some energy types (such as solar) or the cost of generating those energy types: for example if natural gas can be generated quickly but costly, it may have a positive correlation with energy price
 
 ## Model Performance
 
@@ -303,10 +308,10 @@ baseline_model <- lm(`Cents/kWh` ~ Year + Month + State + `Thousand Dollars` + M
                      data = train_set)
 ```
 
-
 ### LASSO Regression Results
 
 Next we have the LASSO regression. The below visualization of the mean squared error (MSE) from a cross-validation procedure for different values of lambda during LASSO regression shows the identified optimal level of complexity that balances fitting the data well with not being overly complex. The chosen lambda is below the graph.
+
 ```{r, echo=FALSE, message = FALSE}
 X <- model.matrix(`Cents/kWh` ~ ., data = train_set)
 Y <- train_set$`Cents/kWh`
@@ -326,7 +331,7 @@ final_lasso <- glmnet(X, Y, alpha = 1, lambda = best_alpha, standardize = TRUE)
 
 **Graph 3**
 
-A small lambda like this one suggests only a small penalty on the model's complexity, so most predictors are likely kept in the model rather than being driven to zero.  That can be seen in the list of coefficients identified by LASSO in the appendix (Table 5), as very few variables were eliminated.
+A small lambda like this one suggests only a small penalty on the model's complexity, so most predictors are likely kept in the model rather than being driven to zero. That can be seen in the list of coefficients identified by LASSO in the appendix (Table 5), as very few variables were eliminated.
 
 ### Random Forest Results
 
@@ -352,12 +357,15 @@ energy.forest = randomForest(`Cents/kWh` ~ Year + Month + State + Thousand_dolla
                              + wind_gen + nuclear_gen + other_gas_gen 
                              + pump_gen + Temp + Temp_Anomaly, data= energy_train, ntree = 1000, mtry = 5, importance = TRUE)
 ```
+
 ```{r, include = FALSE}
 energy_rmse = modelr::rmse(energy.forest, energy_test)
 ```
+
 ```{r, echo = FALSE}
 energy.forest$importance
 ```
+
 **Table 3**
 
 As can be seen, the variables with the greatest "importance" to the model are coal gen and megawatt hours. The latter makes sense, as it is the total amount of energy generated. Coal is interesting, as it is higher than all other energy generation types and is not that widespread an energy source. Another interesting result of the model is that Temp_Anomaly has the lowest inclemental RMSE, since anomalous temperatures could be a strong predictor of higher prices due to unexpected demand. This may be due to the fact that Temp_Anomaly only measures the anomaly as a deviation from the state's average temperature over the entire time period of the data set and not a historical anomaly (such as the leave out mean temperature for that month).
@@ -381,6 +389,7 @@ colnames(results) = c("RMSE")
 rownames(results) = c("Baseline", "LASSO", "Random Forest")
 results
 ```
+
 **Table 4**
 
 The best performing model is the Random Forest, followed by the Baseline, then the LASSO. However, random forest does not have a substantially higher RMSE. These are also not that relatively large RMSEs. Since price is cents/kWh, these RMSEs are a little more than half a cent/kWh.
@@ -389,10 +398,10 @@ The best performing model is the Random Forest, followed by the Baseline, then t
 
 Overall, our results found some correlation between energy prices, temperature, energy generation, and unemployment. However, these were not very strong correlations. Potential explanations for this may be that the relationship between the variable is not very strong (for example unemployment may have a weaker relationship than we initially thought) or more detailed data being required (such as the temperature data being just an average of a state and not capturing the nuances of a state's environment). There may also be some interactions between these variables that a simple correlation not be effective at identifying. The results of our models may support that thought, as the random forest model, which allows for more interactions between data, appears to be the most effective, having the lowest RMSE in our model. This model also has faults in that it requires estimates about variables inputted into the model to make a prediction, which may not be easy to find. For example, it may be difficult for a utility company to predict the amount of wind energy generated in a month to predict prices. Further room for development with this forecasting could include other data that may help predict energy prices, such as amount of new power plants being brought online in the state, capital investment in the state, or the difference between temperature and the historical temperature average for that month. Another approach could be to lag the data; for example, see how energy generation or temperature in a month may predict enery prices into the following month.
 
-
 # Appendix
 
 ## Links for Data
+
 Energy Information Administration: [Energy Generation Report](https://www.eia.gov/electricity/data/eia923/), retrieved in March 2024, and [Energy Prices Data](https://www.eia.gov/survey/#eia-861m), retrieved March 2024 from the EIA861M Report, [U.S. Crude Oil Production](https://www.eia.gov/dnav/pet/hist/LeafHandler.ashx?n=pet&s=mcrfpus2&f=m)
 
 National Centers for Environmental Information: [State Average Temperature Data](https://www.ncei.noaa.gov/access/monitoring/climate-at-a-glance/statewide/time-series), collected for each state.
