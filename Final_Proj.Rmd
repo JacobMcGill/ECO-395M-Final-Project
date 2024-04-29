@@ -1,9 +1,9 @@
 ---
 title: "ECO-395M Final Project: Musab Aluqaee, Daniel Oliner, and Jacob McGill"
 output:
-  pdf_document: default
-  html_document: default
   word_document: default
+  html_document: default
+  pdf_document: default
 date: "2024-04-27"
 ---
 
