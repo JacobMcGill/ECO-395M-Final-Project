@@ -1,9 +1,9 @@
 ---
 title: "ECO-395M Final Project: Musab Alquwaee, Daniel Oliner, and Jacob McGill"
 output:
-  pdf_document: default
-  html_document: default
   word_document: default
+  html_document: default
+  pdf_document: default
 date: "2024-04-27"
 ---
 
@@ -74,7 +74,7 @@ The variables included in our final dataset are:
 
 * Employment-Population Rate: The rate of civilian labor force employed in the state against the total amount of working age population in the state by month. This was also included to account for increases in demand from greater economic activity, such as more people working.
 
-* Gen data: This is data such as gas_gen and hydro_gen that measures the total generation of power by that type in the state measured in megawatthours. We included this data to account for the supply of energy in a given month and state.
+* Gen data: This is data such as gas_gen and hydro_gen that measures the total generation of power by that type in the state measured in megawatthours. The energy types include natural gas, biomass, and solar. We included this data to account for the supply of energy in a given month and state, as well as the influence of the type of energy type.
 
 * Temp and Temp_anomaly: Average temperature in a state for the given month and how much that average temperature deviates from the mean temperature for the state over the time period the data was taken. We included this data to account for variations in demand to weather.
 
