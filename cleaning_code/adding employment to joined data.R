@@ -2,8 +2,8 @@ library(readxl)
 library(tidyverse)
 library(dplyr)
 
-employment_data <- read_csv("/Users/danieloliner/Downloads/monthlyemployment.csv")
-joined_data <- read_csv("/Users/danieloliner/Downloads/joined_data.csv")
+employment_data <- read_csv("/Users/danieloliner/Documents/GitHub/ECO-395M-Final-Project/Modified_data/monthlyemployment.csv")
+joined_data <- read_csv("/Users/danieloliner/Documents/GitHub/ECO-395M-Final-Project/Modified_data/joined_data.csv")
 
 employment_data <- employment_data %>%
   mutate(DATE = as.Date(paste(Year, Month, "01", sep = "-")))
