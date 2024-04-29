@@ -1,9 +1,9 @@
 ---
 title: "ECO-395M Final Project: Musab Alquwaee, Daniel Oliner, and Jacob McGill"
 output:
-  word_document: default
-  html_document: default
   pdf_document: default
+  html_document: default
+  word_document: default
 date: "2024-04-27"
 ---
 
@@ -102,7 +102,7 @@ We will start by going over the results of our initial data analyis, then the re
 To take a preliminary look at the relationship between we conducted a correlation test to determine if a statistically significant correlation between the electricity prices and the unemployment rates exists during this period and the strength of that correlation.
 
 
-```{r, echo=FALSE, warning=FALSE, message=FALSE}
+```{r, echo=FALSE, warning=FALSE, message=FALSE, error = FALSE}
 
 data_2018_2019 <- data %>%
   filter(Year >= 2018 & Year <= 2019) %>%
@@ -161,7 +161,8 @@ This visualization explores the total correlation between unemployment rate and 
 
 ### Temperature and Energy Prices
 
-```{r, echo=FALSE, message = FALSE}
+The below visualization shows the correlation between temperature and energy costs over time, a relationship that is key to understanding how weather influences consumer energy expenditures.
+```{r, echo=FALSE, message = FALSE, error = FALSE}
 data <- data %>%
   mutate(Temp = as.numeric(Temp))
 
@@ -190,7 +191,7 @@ ggplot(time_correlations_temp_energy, aes(x = Time, y = correlation)) +
 
 **Graph 2**
 
-This visualization shows the correlation between temperature and energy costs over time, a relationship that is key to understanding how weather influences consumer energy expenditures. We observe a distinct cyclical pattern in the correlation between these variables, indicating that their relationship is influenced by seasonal factors—likely varying energy demands for heating and cooling throughout the year.
+ We observe a distinct cyclical pattern in the correlation between these variables, indicating that their relationship is influenced by seasonal factors—likely varying energy demands for heating and cooling throughout the year.
 
 ### Energy Generation and Energy Prices 
 
@@ -306,7 +307,7 @@ baseline_model <- lm(`Cents/kWh` ~ Year + Month + State + `Thousand Dollars` + M
 ### LASSO Regression Results
 
 Next we have the LASSO regression. The below visualization of the mean squared error (MSE) from a cross-validation procedure for different values of lambda during LASSO regression shows the identified optimal level of complexity that balances fitting the data well with not being overly complex. The chosen lambda is below the graph.
-```{r, echo=FALSE, cache = FALSE, message = FALSE}
+```{r, echo=FALSE, message = FALSE}
 X <- model.matrix(`Cents/kWh` ~ ., data = train_set)
 Y <- train_set$`Cents/kWh`
 
@@ -331,7 +332,7 @@ A small lambda like this one suggests only a small penalty on the model's comple
 
 Finally, we will train the random forest model with all features in the data set. We also included the inclement mean squared error of each variable in Table 3 below. Inclement MSE measures by how much a variable improves model performance, so a higher value indicates that a variable is more "important."
 
-```{r, include = FALSE, cache = TRUE}
+```{r, include = FALSE, error = FALSE}
 # Now we will move onto random forest
 rf_baseline = data %>%
   select(-1) %>%
@@ -365,7 +366,7 @@ As can be seen, the variables with the greatest "importance" to the model are co
 
 Finally, we will move onto to comparing the root mean squared error of the 3 models we tested.
 
-```{r, echo=FALSE}
+```{r, echo=FALSE, error = FALSE}
 baseline_predictions <- predict(baseline_model, newdata = test_set)
 lasso_predictions <- predict(final_lasso, newx = model.matrix(`Cents/kWh` ~ ., data = test_set))
 
@@ -382,7 +383,7 @@ results
 ```
 **Table 4**
 
-The best performing model is the Random Forest, followed by the Baseline, then the LASSO. However, random forest does not have a substantially higher RMSE, less than 0.1. These are also not that relatively large RMSEs. Since price is cents/kWh, these RMSE are a little more than half a cent/kWh.
+The best performing model is the Random Forest, followed by the Baseline, then the LASSO. However, random forest does not have a substantially higher RMSE. These are also not that relatively large RMSEs. Since price is cents/kWh, these RMSEs are a little more than half a cent/kWh.
 
 # Conclusion
 
